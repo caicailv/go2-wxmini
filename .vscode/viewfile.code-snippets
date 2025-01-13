@@ -1,0 +1,7 @@
+{
+  "View Tag": {
+    "prefix": "view",
+    "body": ["<view>$1</view>"],
+    "description": "Insert a <view> tag"
+  }
+}
