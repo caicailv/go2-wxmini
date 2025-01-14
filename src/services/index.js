@@ -1,5 +1,5 @@
 import { http } from '@/utils/http'
-export const wechatLogin = (data) => {
+export const wechatLoginApi = (data) => {
   return http({
     method: 'POST',
     url: '/wechat/login',
@@ -7,10 +7,17 @@ export const wechatLogin = (data) => {
   })
 }
 
-export const getUsers = (data) => {
+export const getUsersApi = (data) => {
   return http({
     method: 'POST',
     url: '/getUsers',
+    data
+  })
+}
+export const getUserInfoApi = (data) => {
+  return http({
+    method: 'POST',
+    url: '/getUserInfo',
     data
   })
 }

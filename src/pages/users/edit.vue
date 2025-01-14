@@ -1,24 +1,38 @@
 <template>
     <div class="app_container" :style="{ backgroundImage: `url(/static/images/2.jpg)` }">
         <div class="module">
-            <div class="head">
-                <image :src="info.avatar_url || '/static/images/3.png'"></image>
-                <div class="row">
-                    <div class="nickname">{{ info.nickname }}
-                        <labelTitle v-if="info.skate_mileage" :skateMileage="Number(info.skate_mileage) || 0" />
-                    </div>
-                    <div class="city">上海</div>
+            <div class="list">
+                <div class="left">头像</div>
+                <div class="right">
+                    <button hover-class="none" class="avatar-wrapper" open-type="chooseAvatar"
+                        @chooseavatar="onChooseAvatar">
+                        <image class="avatar" :src="avatarUrl || '/static/images/3.png'"></image>
+                    </button>
                 </div>
             </div>
-            <div class="bio" v-if="info.bio">
-                <div class="tit">个性签名: &nbsp; {{ info.bio }}</div>
+            <div class="list">
+                <div class="left">昵称</div>
+                <div class="right">
+                    <input type="nickname" v-model="info.nickname" placeholder="请设置" />
+                </div>
+            </div>
+            <div class="list">
+                <div class="left">个性签名</div>
+                <div class="right">
+                    <input type="text" v-model="info.bio" placeholder="请设置" />
+                </div>
             </div>
         </div>
 
-        <div class="module" v-if="info.gear_setup">
+        <div class="module">
             <div class="gear_setup_row">
                 <div class="tit">个人装备</div>
-                <div class="con">{{ info.gear_setup }}</div>
+                <div class="con">
+                    <!-- {{ info.gear_setup }} -->
+                    <textarea v-model="info.gear_setup" maxlength="1000"></textarea>
+
+
+                </div>
             </div>
         </div>
         <div class="module" v-if="info.gear_setup">
@@ -53,12 +67,21 @@ const getUserInfo = async (openid) => {
     info.value = res.data
     console.log('info', info.value);
 }
-const toUserEdit = ()=>{
-    uni.navigateTo({url: '/pages/users/edit'})
+const toUserEdit = () => {
+    uni.navigateTo({ url: '/pages/users/edit' })
 }
 onLoad((opt) => {
     getUserInfo(opt.openid)
 })
+
+const onChooseAvatar = async (e) => {
+    let avatarUrl = e.detail.avatarUrl;
+    console.log('avatarUrl', avatarUrl);
+
+    //   const base64Url = await toBase64(e.detail.avatarUrl)
+    //   uni.setStorageSync('avatarUrl', e.detail.avatarUrl);
+}
+
 // 这里可以添加你的逻辑代码，比如从后端获取数据，或者添加响应式状态
 </script>
 
@@ -76,6 +99,45 @@ onLoad((opt) => {
         margin: 0 auto;
         margin-top: 20rpx;
         padding: 15rpx 25rpx;
+    }
+}
+
+.avatar {
+    width: 60rpx;
+    height: 60rpx;
+    border-radius: 100%;
+
+}
+
+.list {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 26rpx;
+    min-height: 60rpx;
+    padding: 10rpx 0;
+
+    .left {
+        color: #666;
+
+    }
+
+    .right {
+        input {
+            text-align: right;
+            background-color: transparent;
+        }
+
+        button {
+            background-color: transparent;
+            width: auto;
+            padding: 0;
+
+        }
+    }
+
+    &+.list {
+        border-top: 1rpx solid rgba($color: #000000, $alpha: .1);
 
     }
 }
@@ -123,6 +185,14 @@ onLoad((opt) => {
         font-size: 26rpx;
         margin-top: 10rpx;
         white-space: break-spaces;
+
+        textarea {
+            border: 1rpx solid rgba($color: #000000, $alpha: .1);
+            padding: 15rpx;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 15rpx;
+        }
     }
 
     .imgs {

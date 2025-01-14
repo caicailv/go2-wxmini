@@ -11,6 +11,7 @@
  */
 
 import { API_URL } from "@/global/global.json";
+import { useUserStore } from "@/stores";
 
 // 添加拦截器
 const httpInterceptor = {
@@ -19,6 +20,11 @@ const httpInterceptor = {
     // 1. 非 http 开头需拼接地址
     if (!options.url.startsWith("http")) {
       options.url = API_URL + options.url;
+    }
+    const userStore = useUserStore()
+    options.header = {
+      ...options.header,
+      "Authorization": userStore?.profile?.openid||'',
     }
     options.timeout = 60000;
    
@@ -87,30 +93,31 @@ export const http = (options) => {
   });
 };
 
-// export const uploadFile = (tempFilePath,options={}) => {
-//   wx.uploadFile({
-//     url: "http://localhost:3000/upload", // 后台上传接口
-//     filePath: tempFilePath,
-//     name: "file", // 后台接收的字段名
-//     formData: options,
-//     success(res) {
-//       const data = JSON.parse(res.data);
-//       if (data.code === 200) {
-//         wx.showToast({
-//           title: "发送成功",
-//         });
-//       } else {
-//         wx.showToast({
-//           title: "发送失败",
-//           icon: "none",
-//         });
-//       }
-//     },
-//     fail(err) {
-//       wx.showToast({
-//         title: "上传失败",
-//         icon: "none",
-//       });
-//     },
-//   });
-// };
+export const uploadFile = (tempFilePath,options={}) => {
+  wx.uploadFile({
+    url: API_URL+'/uploadImage', // 后台上传接口
+    filePath: tempFilePath,
+    name: "file", // 后台接收的字段名
+    formData: options,
+    success(res) {
+      const data = JSON.parse(res.data);
+      console.log('uploadFile',data);
+      if (data.code === 200) {
+        wx.showToast({
+          title: "发送成功",
+        });
+      } else {
+        wx.showToast({
+          title: "发送失败",
+          icon: "none",
+        });
+      }
+    },
+    fail(err) {
+      wx.showToast({
+        title: "上传失败",
+        icon: "none",
+      });
+    },
+  });
+};

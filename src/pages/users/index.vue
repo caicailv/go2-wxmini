@@ -1,6 +1,6 @@
 <template>
-  <div class="con bg-red bg-blue-500">
-    <div class="li" v-for="item in userList" :key="item.nickname">
+  <div class="con">
+    <div class="li" @click="toUser(item)" v-for="item in userList" :key="item.nickname">
       <image v-if="item.avatar_url" :src="item.avatar_url" />
       {{ item.nickname }}
     </div>
@@ -9,18 +9,22 @@
 </template>
 <script setup>
 import { ref } from 'vue'
-import { getUsers } from '@/services'
+import { getUsersApi } from '@/services'
 import { onLoad } from '@dcloudio/uni-app'
 const userList = ref([])
 const getUserList = async () => {
-  const res = await getUsers()
+  const res = await getUsersApi()
   console.log('get users', res);
   userList.value = res.data
   // const res = await fetch('https://jsonplaceholder.typicode.com/users')
   // const data = await res.json()
   // userList.value = data
 }
-
+const toUser = (item) => {
+  uni.navigateTo({
+    url: `/pages/users/user?openid=${item.openid}`
+  })
+}
 onLoad(() => {
   getUserList()
 })
@@ -28,13 +32,14 @@ onLoad(() => {
 
 
 <style lang="scss" scoped>
-.con{
+.con {
   display: flex;
   flex-wrap: wrap;
   padding-left: 20rpx;
   padding-top: 20rpx;
 }
-.li{
+
+.li {
   display: flex;
   align-items: center;
   padding: 10rpx 15rpx;
@@ -43,12 +48,14 @@ onLoad(() => {
   border: 1px solid #ccc;
   margin-right: 30rpx;
   margin-bottom: 20rpx;
+
   image {
     width: 40rpx;
     height: 40rpx;
     border-radius: 50%;
     margin-right: 10rpx;
   }
-// 实现userlist 视图
+
+  // 实现userlist 视图
 }
 </style>

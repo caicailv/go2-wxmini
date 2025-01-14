@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onLaunch } from '@dcloudio/uni-app'
-import { wechatLogin } from './services'
+import { wechatLoginApi } from './services'
 import {useUserStore} from './stores'
 
 const userStore = useUserStore()
@@ -40,7 +40,7 @@ const wxLoginFn = () => {
   wx.login({
     async success(res) {
       console.log('res',res);
-      const res2 = await wechatLogin({
+      const res2 = await wechatLoginApi({
         code: res.code
       })
       console.log('res2.data',res2.data);

@@ -41,6 +41,13 @@
         "navigationBarTextStyle": "black",
         "navigationBarTitleText": "用户详情"
       }
+    },
+    {
+      "path": "pages/users/edit",
+      "style": {
+        "navigationBarTextStyle": "black",
+        "navigationBarTitleText": "编辑信息"
+      }
     }
   ],
   "globalStyle": {
