@@ -21,13 +21,12 @@ const httpInterceptor = {
     if (!options.url.startsWith("http")) {
       options.url = API_URL + options.url;
     }
-    const userStore = useUserStore()
+    const userStore = useUserStore();
     options.header = {
       ...options.header,
-      "Authorization": userStore?.profile?.openid||'',
-    }
+      Authorization: userStore?.profile?.openid || "",
+    };
     options.timeout = 60000;
-   
   },
 };
 uni.addInterceptor("request", httpInterceptor);
@@ -38,7 +37,6 @@ export const http = (options) => {
     uni.request({
       ...options,
       success(res) {
-        console.log('request',res);
         // if (!!res.data.code && res.data.code !== 200) {
         //   if (res.data.code === 301) {
         //     uni.showToast({
@@ -71,12 +69,12 @@ export const http = (options) => {
         // if(res.data.toPage){
         //   res.data?.msg && uni.showToast({
         //     icon: "none",
-        //     title: res.data.msg 
+        //     title: res.data.msg
         //   });
         //   setTimeout(() => {
         //     uni.navigateTo({ url:res.data.toPage });
         //   }, 1000);
-        //   return 
+        //   return
         // }
 
         resolve(res.data);
@@ -93,31 +91,18 @@ export const http = (options) => {
   });
 };
 
-export const uploadFile = (tempFilePath,options={}) => {
-  wx.uploadFile({
-    url: API_URL+'/uploadImage', // 后台上传接口
-    filePath: tempFilePath,
-    name: "file", // 后台接收的字段名
-    formData: options,
-    success(res) {
-      const data = JSON.parse(res.data);
-      console.log('uploadFile',data);
-      if (data.code === 200) {
-        wx.showToast({
-          title: "发送成功",
-        });
-      } else {
-        wx.showToast({
-          title: "发送失败",
-          icon: "none",
-        });
-      }
-    },
-    fail(err) {
-      wx.showToast({
-        title: "上传失败",
-        icon: "none",
-      });
-    },
+export const uploadFile = (tempFilePath, options = {}) => {
+  return new Promise((resolve, reject) => {
+    wx.uploadFile({
+      url: API_URL + "/upload", // 后台上传接口
+      filePath: tempFilePath,
+      name: "file", // 后台接收的字段名
+      formData: options,
+      success(res) {
+        const data = JSON.parse(res.data);
+        resolve(data.data.data);
+      },
+      fail: reject,
+    });
   });
 };

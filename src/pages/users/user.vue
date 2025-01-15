@@ -2,7 +2,7 @@
     <div class="app_container" :style="{ backgroundImage: `url(/static/images/2.jpg)` }">
         <div class="module">
             <div class="head">
-                <image :src="info.avatar_url || '/static/images/3.png'"></image>
+                <image :src="info?.avatar_url || '/static/images/3.png'"></image>
                 <div class="row">
                     <div class="nickname">{{ info.nickname }}
                         <labelTitle v-if="info.skate_mileage" :skateMileage="Number(info.skate_mileage) || 0" />
@@ -25,39 +25,43 @@
             <div class="gear_setup_row">
                 <div class="tit">荣誉墙</div>
                 <div class="imgs">
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
-
+                    <image v-for="item in info.honur_list" :key="item" mode="widthFix" :src="item" />
                 </div>
             </div>
         </div>
-        <button class="edit_btn" type="primary" size="large" @click="toUserEdit">编辑信息</button>
+        <button v-if="isEditBtn" class="edit_btn" type="primary" size="large" @click="toUserEdit">编辑信息</button>
     </div>
 </template>
 
 <script setup>
 import { getUserInfoApi } from '@/services'
-import { onLoad } from '@dcloudio/uni-app';
+import { onLoad, onShow } from '@dcloudio/uni-app';
 import labelTitle from './components/labelTitle.vue'
 import { ref } from 'vue';
+import { computed } from 'vue';
+import { useUserStore } from '@/stores';
+
+const userStore = useUserStore()
 const info = ref({})
-const editStatus = ref(false)
+const openid = ref('')
+const isEditBtn = computed(()=>{
+    return userStore.profile.openid === openid.value    
+})
 const getUserInfo = async (openid) => {
     const res = await getUserInfoApi({ openid })
-    console.log('getUserInfo', res);
     info.value = res.data
-    console.log('info', info.value);
 }
-const toUserEdit = ()=>{
-    uni.navigateTo({url: '/pages/users/edit'})
+const toUserEdit = () => {
+    uni.navigateTo({ url: `/pages/users/edit?openid=${openid.value}` })
 }
 onLoad((opt) => {
-    getUserInfo(opt.openid)
+    openid.value = opt.openid
+})
+onShow(() => {
+    setTimeout(() => {
+        console.log('userStore.profile',userStore.profile.openid);
+    }, 2000);
+    getUserInfo(openid.value)
 })
 // 这里可以添加你的逻辑代码，比如从后端获取数据，或者添加响应式状态
 </script>
@@ -130,10 +134,10 @@ onLoad((opt) => {
         grid-template-columns: repeat(3, 1fr);
         gap: 15rpx;
         margin-top: 10rpx;
-
         image {
             width: 100%;
-            height: auto;
+            height: 180rpx;
+            height: 1;
             border-radius: 8rpx;
         }
     }

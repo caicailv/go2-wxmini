@@ -6,7 +6,7 @@
                 <div class="right">
                     <button hover-class="none" class="avatar-wrapper" open-type="chooseAvatar"
                         @chooseavatar="onChooseAvatar">
-                        <image class="avatar" :src="avatarUrl || '/static/images/3.png'"></image>
+                        <image class="avatar" :src="info?.avatar_url || '/static/images/3.png'"></image>
                     </button>
                 </div>
             </div>
@@ -14,6 +14,19 @@
                 <div class="left">昵称</div>
                 <div class="right">
                     <input type="nickname" v-model="info.nickname" placeholder="请设置" />
+                </div>
+            </div>
+            <div class="list">
+                <div class="left">累积滑行距离</div>
+                <div class="right">
+                    <input type="number" v-model="info.skate_mileage" placeholder="请设置" />
+                </div>
+            </div>
+            
+            <div class="list">
+                <div class="left">城市</div>
+                <div class="right">
+                    <input type="text" v-model="info.region" placeholder="请设置" />
                 </div>
             </div>
             <div class="list">
@@ -30,8 +43,6 @@
                 <div class="con">
                     <!-- {{ info.gear_setup }} -->
                     <textarea v-model="info.gear_setup" maxlength="1000"></textarea>
-
-
                 </div>
             </div>
         </div>
@@ -39,47 +50,82 @@
             <div class="gear_setup_row">
                 <div class="tit">荣誉墙</div>
                 <div class="imgs">
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
-                    <image mode="widthFix" :src="info.avatar_url" />
+                    <div class="img" v-for="item in info.honur_list" :key="item">
+                        <uniIcons class="icons" @click="deleteImg(item)" type="clear" size="30" />
+                        <image mode="aspectFill" :src="item" @click="prevImg(item)" />
+                    </div>
+                    <goUpload v-if="info.honur_list?.length < 9" :count="9 - info.honur_list?.length || 0"
+                        @success="changeImgs" />
 
                 </div>
             </div>
         </div>
-        <button class="edit_btn" type="primary" size="large" @click="toUserEdit">编辑信息</button>
+        <button class="edit_btn" :disabled="saveDisabled" type="primary" size="large" @click="toSave">保存信息</button>
     </div>
 </template>
 
 <script setup>
-import { getUserInfoApi } from '@/services'
+import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue'
+import { getUserInfoApi, updateUserInfoApi } from '@/services'
+import uniFilePicker from '@dcloudio/uni-ui/lib/uni-file-picker/uni-file-picker.vue'
+import { uploadFile } from '@/utils/http'
 import { onLoad } from '@dcloudio/uni-app';
-import labelTitle from './components/labelTitle.vue'
 import { ref } from 'vue';
-const info = ref({})
-const editStatus = ref(false)
-const getUserInfo = async (openid) => {
-    const res = await getUserInfoApi({ openid })
-    console.log('getUserInfo', res);
+import { useUserStore } from '../../stores';
+const userStore = useUserStore()
+const saveDisabled = ref(false)
+const info = ref({
+    honur_list: [],
+    nickname: '',
+    region: '',
+    bio: '',
+    skate_mileage:'',
+    gear_setup: '',
+    avatar_url: ''
+
+})
+const getUserInfo = async () => {
+    const res = await getUserInfoApi({ openid:userStore.profile.openid })
+    // Object.keys(info.value).forEach(key => {
+    //     info.value[key] = res.data[key] || ''
+    // })
     info.value = res.data
-    console.log('info', info.value);
+    info.value.honur_list = res.data.honur_list || []
 }
-const toUserEdit = () => {
-    uni.navigateTo({ url: '/pages/users/edit' })
+
+const changeImgs = (urls) => {
+    info.value.honur_list = [...info.value.honur_list, ...urls]
+}
+const toSave = async () => {
+    saveDisabled.value = true
+    await updateUserInfoApi({ ...info.value, userId: info.value.id })
+    saveDisabled.value = false
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    uni.showToast({
+        title: '更新成功',
+        icon: 'success',
+        duration: 1500
+    })
+    uni.navigateBack()
+
+}
+const prevImg = (url) => {
+    uni.previewImage({
+        urls: info.value.honur_list,
+        current: url
+    })
+}
+const deleteImg = (url) => {
+    info.value.honur_list = info.value.honur_list.filter(item => item !== url)
 }
 onLoad((opt) => {
-    getUserInfo(opt.openid)
+    getUserInfo()
 })
 
 const onChooseAvatar = async (e) => {
     let avatarUrl = e.detail.avatarUrl;
-    console.log('avatarUrl', avatarUrl);
-
-    //   const base64Url = await toBase64(e.detail.avatarUrl)
-    //   uni.setStorageSync('avatarUrl', e.detail.avatarUrl);
+    const { url } = await uploadFile(avatarUrl)
+    info.value.avatar_url = url
 }
 
 // 这里可以添加你的逻辑代码，比如从后端获取数据，或者添加响应式状态
@@ -201,10 +247,24 @@ const onChooseAvatar = async (e) => {
         gap: 15rpx;
         margin-top: 10rpx;
 
+        .img {
+            position: relative;
+        }
+
+        .icons {
+            position: absolute;
+            right: -30rpx;
+            top: -30rpx;
+            z-index: 1;
+
+        }
+
         image {
             width: 100%;
-            height: auto;
-            border-radius: 8rpx;
+            // height: auto;
+            border-radius: 14rpx;
+            height: 180rpx;
+
         }
     }
 
@@ -215,6 +275,5 @@ const onChooseAvatar = async (e) => {
     width: 80%;
     background-color: #1677ff;
     border-radius: 50rpx;
-
 }
 </style>

@@ -8,4 +8,7 @@ export default defineConfig({
     sourcemap: process.env.NODE_ENV === 'development',
   },
   plugins: [uni()],
+  optimizeDeps: {
+    include: ['@dcloudio/uni-ui']
+  }
 })

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onLaunch } from '@dcloudio/uni-app'
 import { wechatLoginApi } from './services'
-import {useUserStore} from './stores'
+import { useUserStore } from './stores'
+import { getUserInfoApi } from '@/services'
 
 const userStore = useUserStore()
 const updateApp = () => {
@@ -36,18 +37,15 @@ const updateApp = () => {
   }
 
 }
-const wxLoginFn = () => {
-  wx.login({
-    async success(res) {
-      console.log('res',res);
-      const res2 = await wechatLoginApi({
-        code: res.code
-      })
-      console.log('res2.data',res2.data);
-      userStore.setProfile(res2.data)
-    }
-  })
-
+const wxLoginFn = async () => {
+  const res = await wx.login()
+  const res2 = await wechatLoginApi({ code: res.code })
+  userStore.setProfile(res2.data)
+  initUserInfo(res2.data.openid)
+}
+const initUserInfo = async (openid)=>{
+  const res = await getUserInfoApi({openid})
+  userStore.setProfile(res.data)
 }
 
 onLaunch(async () => {
@@ -99,5 +97,4 @@ image {
 </style>
 
 
-<style>
-</style>
+<style></style>

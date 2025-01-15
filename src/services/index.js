@@ -21,6 +21,13 @@ export const getUserInfoApi = (data) => {
     data
   })
 }
+export const updateUserInfoApi = (data) => {
+  return http({
+    method: 'POST',
+    url: '/updateUserInfo',
+    data
+  })
+}
 
 
 /* 

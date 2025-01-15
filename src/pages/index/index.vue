@@ -1,10 +1,10 @@
 <template>
-  <div class="app_container" :style="{backgroundImage: `url(/static/images/1.jpg)`}">
+  <div class="app_container" :style="{ backgroundImage: `url(/static/images/1.jpg)` }">
     <div class="app_row" style="padding: 20px;">
       <div class="title_row">
         <div class="title">
-        GO2SKATE ldp排位系统
-      </div>
+          GO2SKATE ldp排位系统
+        </div>
 
       </div>
 
@@ -12,7 +12,7 @@
       <!-- 显示昵称 -->
       <div v-if="nickname" class="welcome">
         欢迎你:
-        <span @click="goToPage('/me')" class="nickname">
+        <span @click="goToPage('/pages/users/user?openid='+userStore.profile.openid)" class="nickname">
           {{ nickname }}
         </span>
       </div>
@@ -24,16 +24,15 @@
 
       <!-- 滑手列表 -->
       <div class="button-group">
-        <button type="primary" size="large" @click="goToPage('/users')">滑手列表</button>
+        <button type="primary" size="large" @click="goToPage('/pages/users/index')">滑手列表</button>
       </div>
-
-      <!-- 登录和注册 v-if="!nickname" -->
-      <template >
+      <!-- 滑手列表 -->
+      <div class="button-group">
+        <button type="primary" size="large" @click="act">活动周记</button>
+      </div>
+      <template v-if="!nickname">
         <div class="button-group">
-          <button type="primary" size="large" @click="goToPage('/login')">登录</button>
-        </div>
-        <div class="button-group">
-          <button type="primary" size="large" @click="goToPage('/register')">注册</button>
+          <button type="primary" class="login_btn" @click="toEdit">注册</button>
         </div>
       </template>
 
@@ -46,39 +45,36 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useUserStore } from '../../stores'
+const userStore = useUserStore()
 // import { ElMessageBox, ElMessage } from 'element-plus'
 // import { useRouter } from 'vue-router'
 
 // const router = useRouter()
-const nickname = ref('')
 
 // 跳转页面方法
 const goToPage = (path) => {
-  uni.navigateTo({url: path})
+  uni.navigateTo({ url: path })
 }
-
-// 退出逻辑
-const logout = () => {
-  localStorage.removeItem('nickname')
-  localStorage.removeItem('userId')
-  nickname.value = ''
-  // ElMessage.success('退出成功')
+const act = () => {
+  uni.showToast({
+    title: '敬请期待',
+    icon: 'none',
+    duration: 2000
+  })
 }
+const toEdit = () => {
+  uni.redirectTo({ url: '/pages/users/edit' })
 
-const logoutOpen = () => {
-
-  // ElMessageBox.confirm('确定退出吗?', '提示', {
-  //   confirmButtonText: '确定',
-  //   cancelButtonText: '取消',
-  //   type: 'warning',
-  // }).then(() => {
-  //   logout()
-  // })
 }
+const nickname = computed(() => userStore.profile?.nickname)
+
+
 
 // 获取昵称
-onMounted(() => {
+onMounted(async () => {
+
   // const savedNickname = localStorage.getItem('nickname')
   // if (savedNickname) {
   //   nickname.value = savedNickname
@@ -87,34 +83,53 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.login_btn {
+  width: 50%;
+  margin: 12rpx auto;
+}
+
 button[type=primary] {
   background-color: #1677ff;
 }
+
 .app_container {
   background-position: center;
   background-size: 100% 100%;
-  
-
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba($color: #000, $alpha: .5);
+  }
+
   .app_row {
+    position: relative;
+    z-index: 2;
     height: 50vh;
     width: 100vw;
     display: flex;
     flex-direction: column;
-    .title_row{
+
+    .title_row {
       display: flex;
       align-items: center;
       justify-content: center;
-      
+
     }
+
     .title {
       // height: 30px;
       color: #000;
       text-align: center;
-      font-size: 18px;
+      font-size: 40rpx;
       margin: -50px 0 50px;
       background-color: #fff;
       border-radius: 10rpx;
@@ -125,7 +140,7 @@ button[type=primary] {
 
     .welcome {
       height: 30px;
-      color: #000;
+      color: #fff;
       font-size: 18px;
       margin-bottom: 20px;
 

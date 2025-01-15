@@ -1,11 +1,19 @@
 <template>
-  <div class="con">
-    <div class="li" @click="toUser(item)" v-for="item in userList" :key="item.nickname">
-      <image v-if="item.avatar_url" :src="item.avatar_url" />
-      {{ item.nickname }}
+  <div class="page" :style="{ backgroundImage: `url(/static/images/4.jpg)` }">
+    <div class="g2">
+      <div class="con">
+        <div class="li" @click="toUser(item)" v-for="item in userList" :key="item.nickname">
+          <image v-if="item.avatar_url" :src="item.avatar_url" />
+          {{ item.nickname }}
+        </div>
+
+      </div>
+
     </div>
 
   </div>
+  <!-- -->
+
 </template>
 <script setup>
 import { ref } from 'vue'
@@ -14,8 +22,8 @@ import { onLoad } from '@dcloudio/uni-app'
 const userList = ref([])
 const getUserList = async () => {
   const res = await getUsersApi()
-  console.log('get users', res);
-  userList.value = res.data
+  // userList.value = res.data
+  userList.value = res.data.filter(item => item.openid)
   // const res = await fetch('https://jsonplaceholder.typicode.com/users')
   // const data = await res.json()
   // userList.value = data
@@ -32,11 +40,40 @@ onLoad(() => {
 
 
 <style lang="scss" scoped>
+.page {
+  background-position: center;
+  background-size: 100% 100%;
+  height: 100vh;
+  padding-top: 20rpx;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    // background-color: rgba($color: #fff, $alpha: .5);
+  }
+}
+
+.g2 {
+  width: calc(100vw - 40rpx);
+  background-color: rgba($color: #fff, $alpha: .9);
+  border-radius: 20rpx;
+  margin: 0 auto;
+  margin-top: 20rpx;
+  padding: 15rpx 25rpx;
+  height: calc(100vh - 100rpx);
+
+}
+
 .con {
+
   display: flex;
   flex-wrap: wrap;
   padding-left: 20rpx;
   padding-top: 20rpx;
+
 }
 
 .li {
@@ -48,6 +85,7 @@ onLoad(() => {
   border: 1px solid #ccc;
   margin-right: 30rpx;
   margin-bottom: 20rpx;
+  height: auto;
 
   image {
     width: 40rpx;

@@ -3,7 +3,7 @@
     "autoscan": true,
     "custom": {
       "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
-      "^Xtx(.*)": "@/components/Xtx$1.vue",
+      "^go(.*)": "@/components/go$1.vue",
       "^u-(.*)": "@/uni_modules/vk-uview-ui/components/u-$1/u-$1.vue"
     }
   },

@@ -1,9 +1,9 @@
 <template>
-    <div class="label" :style="{ backgroundColor: label.color }"> 
-        
-        <!-- {{ label?.label }} -->
-          {{ props.skateMileage }}km
-        </div>
+    <div class="row">
+        <div class="label" :style="{ backgroundColor: label.color }"> {{ label?.label }} </div>
+        <div class="mileage">{{ props.skateMileage }}km</div>
+    </div>
+
 </template>
 <script setup>
 import { computed } from 'vue'
@@ -15,15 +15,24 @@ const props = defineProps({
     },
 })
 const labelList = [
-    { num: 20, label: '买了块板', color: 'gray' },
-    { num: 100, label: '刷街新星', color: 'blue' },
-    { num: 500, label: '炮灰', color: 'green' },
-    { num: 1000, label: '卷王', color: 'gold' },
+    // { num: 20, label: '买了块板', color: 'gray' },
+    // { num: 100, label: '刷街新星', color: 'blue' },
+    // { num: 500, label: '炮灰', color: 'green' },
+    // { num: 1000, label: '卷王', color: 'gold' },
+    // { num: 1300, label: '大卷王', color: 'red' },
+    { num: 20, label: '斗者', color: 'gray' },
+    { num: 100, label: '斗师', color: 'blue' },
+    { num: 500, label: '斗王', color: 'green' },
+    { num: 1000, label: '斗宗', color: 'gold' },
+    { num: 3000, label: '斗尊', color: 'red' },
+    { num: 6000, label: '斗圣', color: 'orange' },
+    { num: 10000, label: '斗帝', color: 'yellow' },
 ]
 const label = computed(() => {
-    return labelList.find(item => props.skateMileage >= item.num)
-})
-
+    return labelList
+        .filter(item => props.skateMileage >= item.num)  // 先过滤出符合条件的项
+        .sort((a, b) => b.num - a.num)[0];  // 排序，确保取最高的 num
+});
 
 </script>
 
@@ -32,6 +41,18 @@ const label = computed(() => {
 backgroundColor: labelInfo.color,padding: '0.1rem 0.2rem', borderRadius: '0.2rem', fontSize: '12px',display:'flex',
             justifyContent: 'center',alignItems: 'center'
 */
+.row {
+    display: flex;
+    align-items: center;
+}
+
+.mileage {
+    margin-left: 10rpx;
+    color: #999;
+    font-size: 18rpx;
+
+}
+
 .label {
     background-color: #1677ff;
     padding: 2rpx 8rpx;
@@ -41,7 +62,7 @@ backgroundColor: labelInfo.color,padding: '0.1rem 0.2rem', borderRadius: '0.2rem
     justify-content: center;
     align-items: center;
     color: #fff;
-    margin-left:  10rpx;
+    margin-left: 10rpx;
 
 }
 </style>
