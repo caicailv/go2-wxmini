@@ -10,36 +10,35 @@
 
 
       <!-- 显示昵称 -->
-      <div v-if="nickname" class="welcome">
+      <div v-if="userStore.isLogin" class="welcome">
         欢迎你:
-        <span @click="goToPage('/pages/users/user?openid='+userStore.profile.openid)" class="nickname">
+        <span @click="goToPage('/pages/user/user?openid='+userStore.profile.openid)" class="nickname">
           {{ nickname }}
         </span>
       </div>
 
       <!-- 地图排行 -->
       <div class="button-group">
-        <button type="primary" size="large" @click="goToPage('/pages/mapList/index')">地图列表</button>
+        <button type="primary" size="large" @click="goToPage('/pages/map/list')">地图列表</button>
       </div>
 
       <!-- 滑手列表 -->
       <div class="button-group">
-        <button type="primary" size="large" @click="goToPage('/pages/users/index')">滑手列表</button>
+        <button type="primary" size="large" @click="goToPage('/pages/user/list')">滑手列表</button>
       </div>
       <!-- 滑手列表 -->
       <div class="button-group">
         <button type="primary" size="large" @click="act">活动周记</button>
       </div>
-      <template v-if="!nickname">
+      <template v-if="!userStore.isLogin">
         <div class="button-group">
           <button type="primary" class="login_btn" @click="toEdit">注册</button>
         </div>
       </template>
+      <div class="version_view">v{{ version||'1.1.1' }}</div>
 
-      <!-- 退出账号 -->
-      <!-- <div v-else class="logout" @click="logoutOpen">
-        退出账号
-      </div> -->
+
+
     </div>
   </div>
 </template>
@@ -47,6 +46,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useUserStore } from '../../stores'
+import { onLoad } from '@dcloudio/uni-app'
 const userStore = useUserStore()
 // import { ElMessageBox, ElMessage } from 'element-plus'
 // import { useRouter } from 'vue-router'
@@ -65,12 +65,20 @@ const act = () => {
   })
 }
 const toEdit = () => {
-  uni.redirectTo({ url: '/pages/users/edit' })
+  uni.redirectTo({ url: '/pages/user/edit' })
 
 }
 const nickname = computed(() => userStore.profile?.nickname)
 
 
+const version = ref('')
+const getVersion = () => {
+  const accountInfo = wx.getAccountInfoSync();
+  version.value = accountInfo?.miniProgram?.version ;
+}
+onLoad(() => {
+  getVersion()
+})
 
 // 获取昵称
 onMounted(async () => {
@@ -142,7 +150,7 @@ button[type=primary] {
       height: 30px;
       color: #fff;
       font-size: 18px;
-      margin-bottom: 20px;
+      margin-bottom: 20rpx;
 
       .nickname {
         color: #1677ff;
@@ -166,5 +174,13 @@ button[type=primary] {
       cursor: pointer;
     }
   }
+}
+.version_view{
+  margin-top: 12rpx;
+  width: 100%;
+  text-align: center;
+  color: #999;
+  font-size: 26rpx;
+
 }
 </style>

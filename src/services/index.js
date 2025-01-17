@@ -30,6 +30,30 @@ export const updateUserInfoApi = (data) => {
 }
 
 
+export const editMapApi = (data) => {
+  return http({
+    method: 'POST',
+    url: '/editMap',
+    data
+  })
+}
+
+export const getMapListApi = (data) => {
+  return http({
+    method: 'POST',
+    url: '/getMapList',
+    data
+  })
+}
+
+export const setLightMapApi = (data) => {
+  return http({
+    method: 'POST',
+    url: '/setLightMap',
+    data
+  })
+}
+
 /* 
 
 export const getMapList = (data) => {

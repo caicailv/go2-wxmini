@@ -52,15 +52,12 @@ const getUserInfo = async (openid) => {
     info.value = res.data
 }
 const toUserEdit = () => {
-    uni.navigateTo({ url: `/pages/users/edit?openid=${openid.value}` })
+    uni.navigateTo({ url: `/pages/user/edit?openid=${openid.value}` })
 }
 onLoad((opt) => {
     openid.value = opt.openid
 })
 onShow(() => {
-    setTimeout(() => {
-        console.log('userStore.profile',userStore.profile.openid);
-    }, 2000);
     getUserInfo(openid.value)
 })
 // 这里可以添加你的逻辑代码，比如从后端获取数据，或者添加响应式状态

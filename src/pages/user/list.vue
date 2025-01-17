@@ -30,7 +30,7 @@ const getUserList = async () => {
 }
 const toUser = (item) => {
   uni.navigateTo({
-    url: `/pages/users/user?openid=${item.openid}`
+    url: `/pages/user/user?openid=${item.openid}`
   })
 }
 onLoad(() => {
@@ -45,6 +45,7 @@ onLoad(() => {
   background-size: 100% 100%;
   height: 100vh;
   padding-top: 20rpx;
+
   &::after {
     content: "";
     position: absolute;
@@ -68,7 +69,8 @@ onLoad(() => {
 }
 
 .con {
-
+  position: relative;
+  z-index: 3;
   display: flex;
   flex-wrap: wrap;
   padding-left: 20rpx;
@@ -77,6 +79,8 @@ onLoad(() => {
 }
 
 .li {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   padding: 10rpx 15rpx;

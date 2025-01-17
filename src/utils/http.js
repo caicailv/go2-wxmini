@@ -34,6 +34,10 @@ uni.addInterceptor("uploadFile", httpInterceptor);
 
 export const http = (options) => {
   return new Promise((resolve, reject) => {
+    uni.showLoading({
+      title: "加载中...",
+      mask: true,
+    })
     uni.request({
       ...options,
       success(res) {
@@ -86,6 +90,9 @@ export const http = (options) => {
           title: "网络错误，换个网络试试",
         });
         reject(err);
+      },
+      complete() {
+        uni.hideLoading();
       },
     });
   });

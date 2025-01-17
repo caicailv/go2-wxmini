@@ -13,7 +13,7 @@ export const useUserStore = defineStore(
       profile.value = undefined;
     };
     const isLogin = computed(() => {
-      return !!profile.value;
+      return !!profile.value?.nickname;
     });
     // 记得 return
     return {

@@ -46,7 +46,7 @@
                 </div>
             </div>
         </div>
-        <div class="module" v-if="info.gear_setup">
+        <div class="module">
             <div class="gear_setup_row">
                 <div class="tit">荣誉墙</div>
                 <div class="imgs">
@@ -86,9 +86,6 @@ const info = ref({
 })
 const getUserInfo = async () => {
     const res = await getUserInfoApi({ openid:userStore.profile.openid })
-    // Object.keys(info.value).forEach(key => {
-    //     info.value[key] = res.data[key] || ''
-    // })
     info.value = res.data
     info.value.honur_list = res.data.honur_list || []
 }
@@ -97,15 +94,21 @@ const changeImgs = (urls) => {
     info.value.honur_list = [...info.value.honur_list, ...urls]
 }
 const toSave = async () => {
+    if(!info.value.nickname) return uni.showToast({
+        title: '请填写昵称',
+        icon: 'none',
+        duration: 1500
+    })
+
     saveDisabled.value = true
     await updateUserInfoApi({ ...info.value, userId: info.value.id })
     saveDisabled.value = false
-    await new Promise(resolve => setTimeout(resolve, 1500))
     uni.showToast({
         title: '更新成功',
         icon: 'success',
         duration: 1500
     })
+    await new Promise(resolve => setTimeout(resolve, 1500))
     uni.navigateBack()
 
 }

@@ -22,31 +22,45 @@
       }
     },
     {
-      "path": "pages/mapList/index",
+      "path": "pages/map/list",
       "style": {
         "navigationBarTextStyle": "black",
-        "navigationBarTitleText": "地图列表"
+        "navigationBarTitleText": "路线列表"
       }
     },
     {
-      "path": "pages/users/index",
+      "path": "pages/user/list",
       "style": {
         "navigationBarTextStyle": "black",
         "navigationBarTitleText": "板友圈"
       }
     },
     {
-      "path": "pages/users/user",
+      "path": "pages/user/user",
       "style": {
         "navigationBarTextStyle": "black",
         "navigationBarTitleText": "用户详情"
       }
     },
     {
-      "path": "pages/users/edit",
+      "path": "pages/user/edit",
       "style": {
         "navigationBarTextStyle": "black",
         "navigationBarTitleText": "编辑信息"
+      }
+    },
+    {
+      "path": "pages/map/edit",
+      "style": {
+        "navigationBarTextStyle": "black",
+        "navigationBarTitleText": "编辑路线"
+      }
+    },
+    {
+      "path": "pages/map/detail",
+      "style": {
+        "navigationBarTextStyle": "black",
+        "navigationBarTitleText": "路线详情"
       }
     }
   ],
