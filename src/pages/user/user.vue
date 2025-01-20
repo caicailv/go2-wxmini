@@ -1,5 +1,5 @@
 <template>
-    <div class="app_container" :style="{ backgroundImage: `url(/static/images/2.jpg)` }">
+    <div class="app_container" :style="{ backgroundImage: `url(https://ccl-resource.kaisir.cn/ccl-20250120111559-604952.jpg)` }">
         <div class="module">
             <div class="head">
                 <image :src="info?.avatar_url || '/static/images/3.png'"></image>
@@ -40,6 +40,10 @@ import labelTitle from './components/labelTitle.vue'
 import { ref } from 'vue';
 import { computed } from 'vue';
 import { useUserStore } from '@/stores';
+import {shareCofig} from '@/utils/share'
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(()=>shareCofig)
+onShareTimeline(()=>shareCofig)
 
 const userStore = useUserStore()
 const info = ref({})

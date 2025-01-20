@@ -1,5 +1,5 @@
 <template>
-  <div class="page" :style="{ backgroundImage: `url(/static/images/4.jpg)` }">
+  <div class="page" :style="{ backgroundImage: `url(https://ccl-resource.kaisir.cn/ccl-20250120111647-548896.jpg)` }">
     <div class="g2">
       <div class="con">
         <div class="li" @click="toUser(item)" v-for="item in userList" :key="item.nickname">
@@ -19,6 +19,11 @@
 import { ref } from 'vue'
 import { getUsersApi } from '@/services'
 import { onLoad } from '@dcloudio/uni-app'
+import {shareCofig} from '@/utils/share'
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(()=>shareCofig)
+onShareTimeline(()=>shareCofig)
+
 const userList = ref([])
 const getUserList = async () => {
   const res = await getUsersApi()

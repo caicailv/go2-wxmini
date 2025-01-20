@@ -1,18 +1,13 @@
 <template>
-  <div class="app_container" :style="{ backgroundImage: `url(/static/images/1.jpg)` }">
+  <div class="app_container" :style="{ backgroundImage: `url(https://ccl-resource.kaisir.cn/ccl-20250120111451-369832.jpg)` }">
     <div class="app_row" style="padding: 20px;">
       <div class="title_row">
-        <div class="title">
-          GO2SKATE ldp排位系统
-        </div>
-
+        <div class="title">GO2SKATE</div>
       </div>
-
-
       <!-- 显示昵称 -->
       <div v-if="userStore.isLogin" class="welcome">
         欢迎你:
-        <span @click="goToPage('/pages/user/user?openid='+userStore.profile.openid)" class="nickname">
+        <span @click="goToPage('/pages/user/user?openid=' + userStore.profile.openid)" class="nickname">
           {{ nickname }}
         </span>
       </div>
@@ -26,19 +21,19 @@
       <div class="button-group">
         <button type="primary" size="large" @click="goToPage('/pages/user/list')">滑手列表</button>
       </div>
-      <!-- 滑手列表 -->
       <div class="button-group">
-        <button type="primary" size="large" @click="act">活动周记</button>
+        <button type="primary" size="large" @click="act">活动历史</button>
       </div>
+      <div class="button-group">
+        <button type="primary" size="large" @click="act">装备大全</button>
+      </div>
+      
       <template v-if="!userStore.isLogin">
         <div class="button-group">
           <button type="primary" class="login_btn" @click="toEdit">注册</button>
         </div>
       </template>
-      <div class="version_view">v{{ version||'1.1.1' }}</div>
-
-
-
+      <div class="version_view">v{{ version || '1.1.1' }}</div>
     </div>
   </div>
 </template>
@@ -47,12 +42,11 @@
 import { ref, onMounted, computed } from 'vue'
 import { useUserStore } from '../../stores'
 import { onLoad } from '@dcloudio/uni-app'
+import {shareCofig} from '@/utils/share'
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(()=>shareCofig)
+onShareTimeline(()=>shareCofig)
 const userStore = useUserStore()
-// import { ElMessageBox, ElMessage } from 'element-plus'
-// import { useRouter } from 'vue-router'
-
-// const router = useRouter()
-
 // 跳转页面方法
 const goToPage = (path) => {
   uni.navigateTo({ url: path })
@@ -74,19 +68,10 @@ const nickname = computed(() => userStore.profile?.nickname)
 const version = ref('')
 const getVersion = () => {
   const accountInfo = wx.getAccountInfoSync();
-  version.value = accountInfo?.miniProgram?.version ;
+  version.value = accountInfo?.miniProgram?.version;
 }
 onLoad(() => {
   getVersion()
-})
-
-// 获取昵称
-onMounted(async () => {
-
-  // const savedNickname = localStorage.getItem('nickname')
-  // if (savedNickname) {
-  //   nickname.value = savedNickname
-  // }
 })
 </script>
 
@@ -125,6 +110,7 @@ button[type=primary] {
     width: 100vw;
     display: flex;
     flex-direction: column;
+    margin-top: -20vh;
 
     .title_row {
       display: flex;
@@ -175,7 +161,8 @@ button[type=primary] {
     }
   }
 }
-.version_view{
+
+.version_view {
   margin-top: 12rpx;
   width: 100%;
   text-align: center;

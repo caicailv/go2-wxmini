@@ -1,5 +1,5 @@
 <template>
-    <div class="app_container" :style="{ backgroundImage: `url(/static/images/2.jpg)` }">
+    <div class="app_container" :style="{ backgroundImage: `url(https://ccl-resource.kaisir.cn/ccl-20250120111559-604952.jpg)` }">
         <div class="module">
             <div class="list">
                 <div class="left">路线名称*</div>

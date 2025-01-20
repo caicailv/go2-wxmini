@@ -1,5 +1,5 @@
 <template>
-    <div class="page" :style="{ backgroundImage: `url(/static/images/4.jpg)` }">
+    <div class="page" :style="{ backgroundImage: `url(https://ccl-resource.kaisir.cn/ccl-20250120111647-548896.jpg)` }">
         <div class="module">
             <div class="title">{{ info.name }}</div>
             <div class="region">{{ info.region }}</div>
@@ -42,6 +42,11 @@ import { onLoad } from '@dcloudio/uni-app';
 import { checkLogin } from '@/common/hooks'
 import { useUserStore } from '../../stores';
 import { reactive, computed } from 'vue';
+import {shareCofig} from '@/utils/share'
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(()=>shareCofig)
+onShareTimeline(()=>shareCofig)
+
 const userStore = useUserStore()
 const litMaps = computed(() => userStore?.profile?.lit_map || [])
 const info = reactive({ id: '' })
@@ -50,6 +55,7 @@ const getInfo = async () => {
     Object.keys(res.data[0]).forEach(key => {
         info[key] = res.data[0][key]
     })
+    info.description_imgs = res.data[0]?.description_imgs||[]
 }
 const downloadRoadFile = async () => {
     wx.downloadFile({

@@ -1,5 +1,4 @@
 {
-	// "API_URL":"https://caicailv.cn:3322/api/",
-	"API_URL":"http://localhost:3322/api",
-	"IMG_URL":"https://aijob.oss-cn-hangzhou.aliyuncs.com/mpimg/"
+	// "API_URL":"http://localhost:3322/api",
+	"API_URL":"https://caicailv.cn:3322/api"
 }

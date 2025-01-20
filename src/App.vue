@@ -46,13 +46,10 @@ const initUserInfo = async (openid)=>{
   const res = await getUserInfoApi({openid})
   userStore.setProfile(res.data)
 }
-
 onLaunch(async () => {
   updateApp()
   wxLoginFn()
 })
-
-
 </script>
 
 <style lang="scss">
