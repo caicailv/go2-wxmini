@@ -16,7 +16,9 @@
             <div class="list">
                 <div class="left">所属地区*</div>
                 <div class="right">
-                    <input type="text" v-model="info.region" placeholder="请设置" />
+                    <picker @change="onRegionChange" mode="region" level="city" class="picker" :value="info.region">
+                        <view>{{ info.region || '请设置' }}</view>
+                    </picker>
                 </div>
             </div>
             <div class="list">
@@ -81,6 +83,8 @@
 
 <script setup>
 import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue'
+import { clearRegion } from '@/utils'
+
 // import uniRate from '@dcloudio/uni-ui/lib/uni-rate/uni-rate.vue'
 import { editMapApi } from '@/services'
 import { uploadFile } from '@/utils/http'
@@ -104,7 +108,9 @@ const info = reactive({
     description_imgs: [],
 })
 
-
+const onRegionChange = (ev) => {
+    info.region = clearRegion(ev.detail.value)
+}
 
 
 const upFile = async () => {

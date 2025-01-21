@@ -1,5 +1,6 @@
 <template>
-    <div class="app_container" :style="{ backgroundImage: `url(https://ccl-resource.kaisir.cn/ccl-20250120111559-604952.jpg)` }">
+    <div class="app_container"
+        :style="{ backgroundImage: `url(https://ccl-resource.kaisir.cn/ccl-20250120111559-604952.jpg)` }">
         <div class="module">
             <div class="list">
                 <div class="left">头像</div>
@@ -22,11 +23,13 @@
                     <input type="number" v-model="info.skate_mileage" placeholder="请设置" />
                 </div>
             </div>
-            
+
             <div class="list">
                 <div class="left">城市</div>
                 <div class="right">
-                    <input type="text" v-model="info.region" placeholder="请设置" />
+                    <picker @change="onRegionChange" mode="region" level="city" class="picker" :value="info.region">
+                        <view>{{ info.region || '请设置' }}</view>
+                    </picker>
                 </div>
             </div>
             <div class="list">
@@ -72,6 +75,8 @@ import { uploadFile } from '@/utils/http'
 import { onLoad } from '@dcloudio/uni-app';
 import { ref } from 'vue';
 import { useUserStore } from '../../stores';
+import { clearRegion } from '@/utils'
+
 const userStore = useUserStore()
 const saveDisabled = ref(false)
 const info = ref({
@@ -79,13 +84,13 @@ const info = ref({
     nickname: '',
     region: '',
     bio: '',
-    skate_mileage:'',
+    skate_mileage: '',
     gear_setup: '',
     avatar_url: ''
-
 })
 const getUserInfo = async () => {
-    const res = await getUserInfoApi({ openid:userStore.profile.openid })
+    const res = await getUserInfoApi({ openid: userStore.profile.openid })
+    if (!res.data) return
     info.value = res.data
     info.value.honur_list = res.data.honur_list || []
 }
@@ -93,13 +98,16 @@ const getUserInfo = async () => {
 const changeImgs = (urls) => {
     info.value.honur_list = [...info.value.honur_list, ...urls]
 }
+const onRegionChange = (ev) => {
+    info.value.region = clearRegion(ev.detail.value)
+}
+
 const toSave = async () => {
-    if(!info.value.nickname) return uni.showToast({
+    if (!info.value.nickname) return uni.showToast({
         title: '请填写昵称',
         icon: 'none',
         duration: 1500
     })
-
     saveDisabled.value = true
     await updateUserInfoApi({ ...info.value, userId: info.value.id })
     saveDisabled.value = false
@@ -108,6 +116,10 @@ const toSave = async () => {
         icon: 'success',
         duration: 1500
     })
+    // userStore.setProfile()
+    const res = await getUserInfoApi({ openid: userStore.profile.openid })
+    console.log('res', res.data);
+    userStore.setProfile(res.data)
     await new Promise(resolve => setTimeout(resolve, 1500))
     uni.navigateBack()
 
@@ -121,7 +133,7 @@ const prevImg = (url) => {
 const deleteImg = (url) => {
     info.value.honur_list = info.value.honur_list.filter(item => item !== url)
 }
-onLoad((opt) => {
+onLoad(() => {
     getUserInfo()
 })
 

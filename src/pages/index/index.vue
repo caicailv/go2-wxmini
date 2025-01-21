@@ -59,7 +59,7 @@ const act = () => {
   })
 }
 const toEdit = () => {
-  uni.redirectTo({ url: '/pages/user/edit' })
+  uni.navigateTo({ url: '/pages/user/edit' })
 
 }
 const nickname = computed(() => userStore.profile?.nickname)

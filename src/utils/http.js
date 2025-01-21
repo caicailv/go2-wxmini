@@ -37,51 +37,20 @@ export const http = (options) => {
     uni.showLoading({
       title: "加载中...",
       mask: true,
-    })
+    });
     uni.request({
       ...options,
-      success(res) {
-        // if (!!res.data.code && res.data.code !== 200) {
-        //   if (res.data.code === 301) {
-        //     uni.showToast({
-        //       icon: "none",
-        //       title: "请登录后查询更多信息",
-        //     })
-        //     // const memberStore = useMemberStore();
-        //     // memberStore.clearProfile();
-        //     // uni.navigateTo({ url: "/pages/login/login" });
-        //     reject(res);
-        //     return;
-        //   }
-
-        //   if (res.data.code == 302) {
-        //     // 引导开通vip
-        //     const memberStore = useMemberStore();
-        //     memberStore.setGuidedVipVisible(true);
-        //     return;
-        //   }
-        //   if (res.data.code == 303) {
-        //     // 引导开通vip
-        //     return;
-        //   }
-        //   uni.showToast({
-        //     icon: "none",
-        //     title: res.data.msg || "请求错误",
-        //   });
-        //   return reject(res);
-        // }
-        // if(res.data.toPage){
-        //   res.data?.msg && uni.showToast({
-        //     icon: "none",
-        //     title: res.data.msg
-        //   });
-        //   setTimeout(() => {
-        //     uni.navigateTo({ url:res.data.toPage });
-        //   }, 1000);
-        //   return
-        // }
-
-        resolve(res.data);
+      success(re) {
+        const res = re.data;
+        if (res.status === 500) {
+          reject(res);
+          return uni.showModal({
+            icon: "none",
+            title: `恭喜你发现彩蛋,请联系菜菜驴: ${res.msg || "请求错误"}`,
+            showCancel: false,
+          });
+        }
+        resolve(res);
       },
       // 响应失败
       fail(err) {

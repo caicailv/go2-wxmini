@@ -7,7 +7,7 @@
                     <div class="nickname">{{ info.nickname }}
                         <labelTitle v-if="info.skate_mileage" :skateMileage="Number(info.skate_mileage) || 0" />
                     </div>
-                    <div class="city">上海</div>
+                    <div class="city">{{info.region||''}}</div>
                 </div>
             </div>
             <div class="bio" v-if="info.bio">
@@ -54,6 +54,7 @@ const isEditBtn = computed(()=>{
 const getUserInfo = async (openid) => {
     const res = await getUserInfoApi({ openid })
     info.value = res.data
+
 }
 const toUserEdit = () => {
     uni.navigateTo({ url: `/pages/user/edit?openid=${openid.value}` })
