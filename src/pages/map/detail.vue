@@ -94,7 +94,6 @@ const setLightMap = async () => {
         }
         userStore.setProfile({ lit_map })
     }
-
 }
 const prevImg = (url) => {
     uni.previewImage({
@@ -103,7 +102,6 @@ const prevImg = (url) => {
     })
 }
 onLoad((opt) => {
-    console.log('opt', opt);
     info.id = Number(opt.id)
     getInfo()
 })
@@ -234,5 +232,11 @@ onLoad((opt) => {
 
 /* 
 ["https://ccl-resource.kaisir.cn/ccl-20250116152150-908554.png","https://ccl-resource.kaisir.cn/ccl-20250116152150-908554.png","https://ccl-resource.kaisir.cn/ccl-20250116152150-908554.png","https://ccl-resource.kaisir.cn/ccl-20250116152150-908554.png","https://ccl-resource.kaisir.cn/ccl-20250116152150-908554.png"]
+*/
+/* 
+INSERT INTO `ldp_database`.`users` (`id`, `nickname`, `password`, `avatar_url`, `bio`, `created_at`, `account`, `gear_setup`, `height`, `weight`, `age`, `region`, `gear_setup_img`, `gender`, `openid`, `skate_mileage`, `honur_list`, `lit_map`) VALUES (33, '菜菜驴', NULL, 'https://ccl-resource.kaisir.cn/ccl-20250122101257-029540.jpg', NULL, '2025-01-21 13:20:35', NULL, '搜搜', NULL, NULL, NULL, '山西朔州', NULL, 0, 'orouA7ZQS-7OwNGQo8njKpYHKMiE', NULL, '[]', NULL);
+
+
+
 */
 </style>

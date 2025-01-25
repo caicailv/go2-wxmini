@@ -21,7 +21,7 @@
                 <div class="con">{{ info.gear_setup }}</div>
             </div>
         </div>
-        <div class="module" v-if="info.gear_setup">
+        <div class="module" v-if="info.honur_list?.length">
             <div class="gear_setup_row">
                 <div class="tit">荣誉墙</div>
                 <div class="imgs">

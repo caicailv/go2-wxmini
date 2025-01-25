@@ -28,7 +28,7 @@ const userList = ref([])
 const getUserList = async () => {
   const res = await getUsersApi()
   // userList.value = res.data
-  userList.value = res.data.filter(item => item.openid)
+  userList.value = res.data.filter(item => item.openid&&item.nickname)
   // const res = await fetch('https://jsonplaceholder.typicode.com/users')
   // const data = await res.json()
   // userList.value = data

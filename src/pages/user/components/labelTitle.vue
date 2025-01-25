@@ -15,18 +15,14 @@ const props = defineProps({
     },
 })
 const labelList = [
-    // { num: 20, label: '买了块板', color: 'gray' },
-    // { num: 100, label: '刷街新星', color: 'blue' },
-    // { num: 500, label: '炮灰', color: 'green' },
-    // { num: 1000, label: '卷王', color: 'gold' },
-    // { num: 1300, label: '大卷王', color: 'red' },
+    { num: 1, label: '斗之气', color: 'gray' },
     { num: 20, label: '斗者', color: 'gray' },
     { num: 100, label: '斗师', color: 'blue' },
     { num: 500, label: '斗王', color: 'green' },
     { num: 1000, label: '斗宗', color: 'gold' },
     { num: 3000, label: '斗尊', color: 'red' },
     { num: 6000, label: '斗圣', color: 'orange' },
-    { num: 10000, label: '斗帝', color: 'yellow' },
+    { num: 10000, label: '斗帝', color: '#315efb' },
 ]
 const label = computed(() => {
     return labelList
