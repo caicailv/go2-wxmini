@@ -139,3 +139,16 @@ export const clearRegion = (val) => {
   }
   return res.replace("省", "").replace("市", "");
 };
+
+export const checkManage = (openid) => {
+  const manages = [
+    `orouA7ZQS-7OwNGQo8njKpYHKMiE`, //菜菜驴
+    // `orouA7ZQS-7OwNGQo8njKpYHKMia`, //菜菜驴
+    'orouA7dqjj8EEGA7DT8IgdwFxTeQ', //勾勾
+  ];
+  if (manages.includes(openid)) {
+    return true;
+  }
+
+  return false;
+};

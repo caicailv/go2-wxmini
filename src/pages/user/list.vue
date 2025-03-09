@@ -6,36 +6,48 @@
           <image v-if="item.avatar_url" :src="item.avatar_url" />
           {{ item.nickname }}
         </div>
-
       </div>
 
-    </div>
 
+      <div class="button-group" v-if="showBtn">
+        <button type="primary" size="large" @click="toManageAddUser">录入用户</button>
+      </div>
+    </div>
   </div>
   <!-- -->
 
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref,computed } from 'vue'
 import { getUsersApi } from '@/services'
 import { onLoad } from '@dcloudio/uni-app'
-import {shareCofig} from '@/utils/share'
+import { useUserStore } from '@/stores';
+import { shareCofig } from '@/utils/share'
+import { checkManage } from '../../utils'
 import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
-onShareAppMessage(()=>shareCofig)
-onShareTimeline(()=>shareCofig)
+onShareAppMessage(() => shareCofig)
+onShareTimeline(() => shareCofig)
+const userStore = useUserStore()
 
+const showBtn = computed(()=>{
+  let openid = userStore?.profile?.openid
+  if(!openid) return false
+  return checkManage(openid)
+})
 const userList = ref([])
 const getUserList = async () => {
   const res = await getUsersApi()
-  // userList.value = res.data
-  userList.value = res.data.filter(item => item.openid&&item.nickname)
-  // const res = await fetch('https://jsonplaceholder.typicode.com/users')
-  // const data = await res.json()
-  // userList.value = data
+  userList.value = res.data
+
 }
 const toUser = (item) => {
   uni.navigateTo({
-    url: `/pages/user/user?openid=${item.openid}`
+    url: `/pages/user/user?openid=${item.openid||""}&id=${item.id}`
+  })
+}
+const toManageAddUser = () => {
+  uni.navigateTo({
+    url: `/pages/user/edit?type=manageCreare`
   })
 }
 onLoad(() => {
@@ -104,5 +116,14 @@ onLoad(() => {
   }
 
   // 实现userlist 视图
+}
+
+.button-group {
+  position: relative;
+  z-index: 3;
+
+  button:active {
+    background-color: #1677ff;
+  }
 }
 </style>

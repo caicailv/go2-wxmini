@@ -21,6 +21,7 @@ export const getUserInfoApi = (data) => {
     data
   })
 }
+
 export const updateUserInfoApi = (data) => {
   return http({
     method: 'POST',
@@ -28,7 +29,13 @@ export const updateUserInfoApi = (data) => {
     data
   })
 }
-
+export const manageCreateUserApi = (data) => {
+  return http({
+    method: 'POST',
+    url: '/manageCreateUser',
+    data
+  })
+}
 
 export const editMapApi = (data) => {
   return http({

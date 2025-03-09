@@ -84,8 +84,6 @@
 <script setup>
 import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue'
 import { clearRegion } from '@/utils'
-
-// import uniRate from '@dcloudio/uni-ui/lib/uni-rate/uni-rate.vue'
 import { editMapApi } from '@/services'
 import { uploadFile } from '@/utils/http'
 import { onLoad } from '@dcloudio/uni-app';

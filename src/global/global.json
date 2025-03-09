@@ -1,4 +1,4 @@
 {
-	// "API_URL":"http://localhost:3322/api",
-	"API_URL":"https://www.caicailv.cn:3322/api"
+	"API_URL":"http://localhost:3322/api"
+	// "API_URL":"https://www.caicailv.cn:3322/api"
 }

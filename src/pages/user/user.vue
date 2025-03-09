@@ -17,13 +17,13 @@
 
         <div class="module" v-if="info.gear_setup">
             <div class="gear_setup_row">
-                <div class="tit">个人装备</div>
+                <div class="tit">滑手经历</div>
                 <div class="con">{{ info.gear_setup }}</div>
             </div>
         </div>
         <div class="module" v-if="info.honur_list?.length">
             <div class="gear_setup_row">
-                <div class="tit">荣誉墙</div>
+                <div class="tit">滑手图片</div>
                 <div class="imgs">
                     <image v-for="item in info.honur_list" :key="item" mode="widthFix" :src="item" />
                 </div>
@@ -41,6 +41,8 @@ import { ref } from 'vue';
 import { computed } from 'vue';
 import { useUserStore } from '@/stores';
 import {shareCofig} from '@/utils/share'
+import {checkManage } from '@/utils'
+
 import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
 onShareAppMessage(()=>shareCofig)
 onShareTimeline(()=>shareCofig)
@@ -48,22 +50,30 @@ onShareTimeline(()=>shareCofig)
 const userStore = useUserStore()
 const info = ref({})
 const openid = ref('')
+const id = ref('')
 const isEditBtn = computed(()=>{
-    return userStore.profile.openid === openid.value    
+    if(userStore.profile.openid === openid.value ) return true 
+    return checkManage(userStore.profile.openid)
 })
-const getUserInfo = async (openid) => {
-    const res = await getUserInfoApi({ openid })
+const getUserInfo = async (openid,id) => {
+    const res = await getUserInfoApi({ openid,id })
     info.value = res.data
-
 }
 const toUserEdit = () => {
-    uni.navigateTo({ url: `/pages/user/edit?openid=${openid.value}` })
+    let url = `/pages/user/edit?openid=${openid.value}&id=${id.value}`
+    if(checkManage(userStore.profile.openid)){
+        url += `&type=manageEdit`
+
+    }
+    
+    uni.navigateTo({ url  })
 }
 onLoad((opt) => {
     openid.value = opt.openid
+    id.value = opt.id
 })
 onShow(() => {
-    getUserInfo(openid.value)
+    getUserInfo(openid.value,id.value)
 })
 // 这里可以添加你的逻辑代码，比如从后端获取数据，或者添加响应式状态
 </script>

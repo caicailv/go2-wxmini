@@ -2,7 +2,7 @@
     <div class="app_container"
         :style="{ backgroundImage: `url(https://ccl-resource.kaisir.cn/ccl-20250120111559-604952.jpg)` }">
         <div class="module">
-            <div class="list">
+            <div class="list" v-if="userStore.profile.openid === info.openid">
                 <div class="left">头像</div>
                 <div class="right">
                     <button hover-class="none" class="avatar-wrapper" open-type="chooseAvatar"
@@ -14,7 +14,8 @@
             <div class="list">
                 <div class="left">昵称</div>
                 <div class="right">
-                    <input type="nickname" v-model="info.nickname" placeholder="请设置" />
+                    <input v-if="type == 'manage'" type="text" v-model="info.nickname" placeholder="请设置" />
+                    <input v-else type="nickname" v-model="info.nickname" placeholder="请设置" />
                 </div>
             </div>
             <div class="list">
@@ -32,7 +33,7 @@
                     </picker>
                 </div>
             </div>
-            <div class="list">
+            <div class="list" v-if="type !== 'manage'">
                 <div class="left">个性签名</div>
                 <div class="right">
                     <input type="text" v-model="info.bio" placeholder="请设置" />
@@ -42,7 +43,7 @@
 
         <div class="module">
             <div class="gear_setup_row">
-                <div class="tit">个人装备</div>
+                <div class="tit">滑手经历</div>
                 <div class="con">
                     <!-- {{ info.gear_setup }} -->
                     <textarea v-model="info.gear_setup" maxlength="1000"></textarea>
@@ -51,7 +52,7 @@
         </div>
         <div class="module">
             <div class="gear_setup_row">
-                <div class="tit">荣誉墙</div>
+                <div class="tit">滑手图片</div>
                 <div class="imgs">
                     <div class="img" v-for="item in info.honur_list" :key="item">
                         <uniIcons class="icons" @click="deleteImg(item)" type="clear" size="30" />
@@ -70,15 +71,17 @@
 <script setup>
 import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue'
 import { getUserInfoApi, updateUserInfoApi } from '@/services'
-import uniFilePicker from '@dcloudio/uni-ui/lib/uni-file-picker/uni-file-picker.vue'
 import { uploadFile } from '@/utils/http'
 import { onLoad } from '@dcloudio/uni-app';
 import { ref } from 'vue';
 import { useUserStore } from '../../stores';
 import { clearRegion } from '@/utils'
+import { manageCreateUserApi } from '../../services';
 
 const userStore = useUserStore()
 const saveDisabled = ref(false)
+const type = ref('')
+
 const info = ref({
     honur_list: [],
     nickname: '',
@@ -86,10 +89,11 @@ const info = ref({
     bio: '',
     skate_mileage: '',
     gear_setup: '',
-    avatar_url: ''
+    avatar_url: '',
+    openid: ''
 })
-const getUserInfo = async () => {
-    const res = await getUserInfoApi({ openid: userStore.profile.openid })
+const getUserInfo = async (openid,id) => {
+    const res = await getUserInfoApi({ openid, id})
     if (!res.data) return
     info.value = res.data
     info.value.honur_list = res.data.honur_list || []
@@ -108,6 +112,7 @@ const toSave = async () => {
         icon: 'none',
         duration: 1500
     })
+    if (type.value === 'manageCreare') return manageCreareSave()
     saveDisabled.value = true
     await updateUserInfoApi({ ...info.value, userId: info.value.id })
     saveDisabled.value = false
@@ -116,14 +121,26 @@ const toSave = async () => {
         icon: 'success',
         duration: 1500
     })
-    // userStore.setProfile()
-    const res = await getUserInfoApi({ openid: userStore.profile.openid })
-    console.log('res', res.data);
-    userStore.setProfile(res.data)
+    if(!type.value){
+        const res = await getUserInfoApi({ openid: userStore.profile.openid})
+        userStore.setProfile(res.data)
+    }
     await new Promise(resolve => setTimeout(resolve, 1500))
     uni.navigateBack()
-
 }
+const manageCreareSave = async () => {
+    saveDisabled.value = true
+    await manageCreateUserApi({ ...info.value })
+    saveDisabled.value = false
+    uni.showToast({
+        title: '添加成功',
+        icon: 'success',
+        duration: 1500
+    })
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    uni.navigateBack()
+}
+
 const prevImg = (url) => {
     uni.previewImage({
         urls: info.value.honur_list,
@@ -133,8 +150,12 @@ const prevImg = (url) => {
 const deleteImg = (url) => {
     info.value.honur_list = info.value.honur_list.filter(item => item !== url)
 }
-onLoad(() => {
-    getUserInfo()
+onLoad((opt) => {
+    type.value = opt.type || ""
+    info.value.openid = opt.openid || ""
+    info.value.id = opt.id || ""
+    if (type.value === 'manageCreare') return
+    getUserInfo(info.value.openid,info.value.id)
 })
 
 const onChooseAvatar = async (e) => {

@@ -90,6 +90,15 @@ image {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+button[type=primary] {
+  background-color: #1677ff;
+}
+.button-group {
+      margin-top: 12px;
+      .button {
+        width: 100%;
+      }
+    }
 </style>
 
 
