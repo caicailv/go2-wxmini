@@ -37,7 +37,8 @@ const showBtn = computed(()=>{
 const userList = ref([])
 const getUserList = async () => {
   const res = await getUsersApi()
-  userList.value = res.data
+  userList.value = res.data.filter(el=>el.nickname)
+
 
 }
 const toUser = (item) => {

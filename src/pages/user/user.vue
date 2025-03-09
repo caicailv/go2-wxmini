@@ -10,6 +10,9 @@
                     <div class="city">{{info.region||''}}</div>
                 </div>
             </div>
+            <div class="bio" v-if="info.skate_year">
+                <div class="tit">滑龄: &nbsp; {{ info.skate_year }}年</div>
+            </div>
             <div class="bio" v-if="info.bio">
                 <div class="tit">个性签名: &nbsp; {{ info.bio }}</div>
             </div>
@@ -25,7 +28,7 @@
             <div class="gear_setup_row">
                 <div class="tit">滑手图片</div>
                 <div class="imgs">
-                    <image v-for="item in info.honur_list" :key="item" mode="widthFix" :src="item" />
+                    <image v-for="item in info.honur_list" :key="item" mode="widthFix" :src="item" @click="prevImg(item)" />
                 </div>
             </div>
         </div>
@@ -67,6 +70,13 @@ const toUserEdit = () => {
     }
     
     uni.navigateTo({ url  })
+}
+
+const prevImg = (url) => {
+    uni.previewImage({
+        urls: info.value.honur_list,
+        current: url
+    })
 }
 onLoad((opt) => {
     openid.value = opt.openid

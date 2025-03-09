@@ -24,7 +24,12 @@
                     <input type="number" v-model="info.skate_mileage" placeholder="请设置" />
                 </div>
             </div>
-
+            <div class="list">
+                <div class="left">滑龄</div>
+                <div class="right">
+                    <input type="number" v-model="info.skate_year" placeholder="请设置" /> <span class="lab">年</span>
+                </div>
+            </div>
             <div class="list">
                 <div class="left">城市</div>
                 <div class="right">
@@ -88,14 +93,15 @@ const info = ref({
     region: '',
     bio: '',
     skate_mileage: '',
+    skate_year: '',
     gear_setup: '',
     avatar_url: '',
     openid: ''
 })
-const getUserInfo = async (openid,id) => {
-    const res = await getUserInfoApi({ openid, id})
+const getUserInfo = async (openid, id) => {
+    const res = await getUserInfoApi({ openid, id })
     if (!res.data) return
-    info.value = res.data
+    info.value = { ...info.value, ...res.data }
     info.value.honur_list = res.data.honur_list || []
 }
 
@@ -113,6 +119,7 @@ const toSave = async () => {
         duration: 1500
     })
     if (type.value === 'manageCreare') return manageCreareSave()
+    console.log(`info.value`, info.value);
     saveDisabled.value = true
     await updateUserInfoApi({ ...info.value, userId: info.value.id })
     saveDisabled.value = false
@@ -121,8 +128,8 @@ const toSave = async () => {
         icon: 'success',
         duration: 1500
     })
-    if(!type.value){
-        const res = await getUserInfoApi({ openid: userStore.profile.openid})
+    if (!type.value) {
+        const res = await getUserInfoApi({ openid: userStore.profile.openid })
         userStore.setProfile(res.data)
     }
     await new Promise(resolve => setTimeout(resolve, 1500))
@@ -155,7 +162,7 @@ onLoad((opt) => {
     info.value.openid = opt.openid || ""
     info.value.id = opt.id || ""
     if (type.value === 'manageCreare') return
-    getUserInfo(info.value.openid,info.value.id)
+    getUserInfo(info.value.openid, info.value.id)
 })
 
 const onChooseAvatar = async (e) => {
@@ -205,6 +212,10 @@ const onChooseAvatar = async (e) => {
     }
 
     .right {
+        display: flex;
+        justify-content: right;
+        align-items: center;
+
         input {
             text-align: right;
             background-color: transparent;
@@ -214,6 +225,11 @@ const onChooseAvatar = async (e) => {
             background-color: transparent;
             width: auto;
             padding: 0;
+
+        }
+
+        .lab {
+            margin-left: 5rpx;
 
         }
     }
