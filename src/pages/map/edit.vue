@@ -54,8 +54,15 @@
                         <button type="primary" @click="info.road_file = []" size="mini">删除</button>
                     </div>
                 </div>
+                <div class="con">
+                    <parseMap :tempFilePath="tempFilePath" />
+
+                </div>
             </div>
         </div>
+
+
+
         <div class="module">
             <div class="gear_setup_row">
                 <div class="tit">路线描述</div>
@@ -90,9 +97,10 @@ import { onLoad } from '@dcloudio/uni-app';
 import { ref, reactive } from 'vue';
 import {checkLogin} from '@/common/hooks' 
 import { useUserStore } from '../../stores';
+import parseMap from './components/parseMap.vue';
 const userStore = useUserStore()
 const saveDisabled = ref(false)
-
+const tempFilePath = ref('')
 const info = reactive({
     id: '',
     name: '',
@@ -109,7 +117,32 @@ const info = reactive({
 const onRegionChange = (ev) => {
     info.region = clearRegion(ev.detail.value)
 }
-
+const readFileContent = (tempFilePath) => {
+    const fs = wx.getFileSystemManager()
+    fs.readFile({
+        filePath: tempFilePath,
+        encoding: 'utf-8',
+        success: res => {
+            console.log('文件内容读取成功：')
+            const kmlContent = res.data
+            console.log('kmlContent', kmlContent);
+            wx.setStorage({
+                key: 'kmlContent',
+                data: kmlContent,
+                success: () => {
+                    console.log('kmlContent存储成功')
+                }
+            })
+        },
+        fail: err => {
+            console.error('文件读取失败：', err)
+            uni.showToast({
+                title: '文件读取失败',
+                icon: 'none'
+            })
+        }
+    })
+}
 
 const upFile = async () => {
     const res = await wx.chooseMessageFile({
@@ -117,8 +150,12 @@ const upFile = async () => {
         type: 'file',
     })
     const file = res.tempFiles[0]
-    const { url } = await uploadFile(file.path)
-    info.road_file = url
+    console.log('file',file);
+    tempFilePath.value = file.path
+    readFileContent(file.path)
+    
+    // const { url } = await uploadFile(file.path)
+    // info.road_file = url
 }
 
 const changeImgs = (urls) => {

@@ -8,7 +8,6 @@ export const useUserStore = defineStore(
     const profile = ref();
     const setProfile = (val) => {
       profile.value = { ...profile.value, ...val };
-      console.log('setProfile',profile.value);
     };
     const clearProfile = () => {
       profile.value = undefined;
