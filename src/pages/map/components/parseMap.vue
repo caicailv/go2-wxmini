@@ -1,14 +1,7 @@
 <template>
-    <div class="con">
+    <div class="con" v-if="paths.length">
         <map id="myMap" class="map" :latitude="centerLatitude" :longitude="centerLongitude" :markers="markers"
-            :polyline="[{
-                points: paths,
-                color: '#FF0000',
-                width: 4,
-                arrowLine: false
-            }]" include-points></map>
-        <!-- scale="14" -->
-        <div class="p1">解析结果:</div>
+            :polyline="polylines"></map>
         <div class="li">
             <div class="left">创建人</div>
             <div class="right">{{ resultData?.extendedData?.CreaterName }}</div>
@@ -21,25 +14,28 @@
             <div class="left">终点</div>
             <div class="right">{{ resultData?.extendedData?.PosEndName }}</div>
         </div>
+        <div class="li">
+            <div class="left">里程</div>
+            <div class="right">{{ mileage }}km</div>
+        </div>
     </div>
 </template>
 
 <script setup>
-import { watch, ref, onMounted } from 'vue';
+import { watch, ref, computed } from 'vue';
 import parseKML from './parseKML.js';
 import { onReady } from '@dcloudio/uni-app';
 import { getCurrentInstance } from 'vue'
 const instance = getCurrentInstance()
 const props = defineProps({
-    tempFilePath: String
+    kmlContent: String
 });
 const resultData = ref({})
-let paths = []
+const paths = ref([])  // 改为响应式数组
+const polylines = ref([]); // 新增polylines响应式数组
 const centerLatitude = ref(0);
 const centerLongitude = ref(0);
 const markers = ref([]);
-let mapContext = null;
-
 const calculateCenter = (coordinates) => {
     if (!coordinates || coordinates.length === 0) return { latitude: 0, longitude: 0 };
     let totalLatitude = 0;
@@ -54,10 +50,13 @@ const calculateCenter = (coordinates) => {
         longitude: totalLongitude / coordinates.length
     };
 };
-
+const mileage = computed(() => {
+    let m = resultData.value?.extendedData?.Mileage || 0;
+    let mi = Math.floor(m / 1000);
+    return mi || 0
+});
 const drawPolyline = (paths) => {
     if (!paths || paths.length === 0) return;
-
     // 1. 计算中心点
     const center = calculateCenter(paths);
     centerLatitude.value = center.latitude;
@@ -69,7 +68,7 @@ const drawPolyline = (paths) => {
             id: 1,
             latitude: paths[0].latitude,
             longitude: paths[0].longitude,
-            // iconPath: '/static/start.png', // 起点图标
+            iconPath: '/static/images/7.png', // 起点图标
             width: 30,
             height: 30
         },
@@ -77,61 +76,74 @@ const drawPolyline = (paths) => {
             id: 2,
             latitude: paths[paths.length - 1].latitude,
             longitude: paths[paths.length - 1].longitude,
-            // iconPath: '/static/end.png',   // 终点图标
+            iconPath: '/static/images/8.png', // 起点图标
             width: 30,
             height: 30
         }
     ];
 
-    console.log('aaa', 'bbb');
-
-    console.log('this', this);
     // 4. 调整地图视野以包含所有路径点
     const mpInstance = instance.proxy.$scope
     const mapContext = wx.createMapContext('myMap', mpInstance);
-    mapContext.includePoints({
-        points: paths,          // 传入路径点数组
-        padding: [0, 0, 0, 0],             // 边距（单位：px）
-        success: () => {
-            console.log('调整视野成功');
-        },
-        fail: (err) => {
-            console.log('调整视野失败', err);
-        },
-        complete: () => {
-            console.log('调整视野完成');
-        }
-    });
+    mapContext.includePoints({ points: paths, padding: [20, 20, 20, 20] });
 };
+
+
+
+
 const initKmlContent = (kmlContent) => {
-
     const result = parseKML(kmlContent);
-    // console.log('result', result);
     resultData.value = result.document;
-    paths = result.document.folders[1].placemarks[0].geometry.coordinates
-    // console.log('paths', JSON.stringify(paths));
-    // console.log('paths', JSON.stringify(paths, null, 2));
-    drawPolyline(paths);
 
+    // 初始化空路径数组
+    paths.value = [];
+    polylines.value = [];
 
+    // 获取所有placemarks的坐标
+    if (result.document.folders && result.document.folders.length > 1 &&
+        result.document.folders[1].placemarks &&
+        result.document.folders[1].placemarks.length > 0) {
+
+        // 遍历所有placemarks，为每个创建一条轨迹
+        result.document.folders[1].placemarks.forEach((placemark, index) => {
+            if (placemark.geometry && placemark.geometry.coordinates &&
+                Array.isArray(placemark.geometry.coordinates)) {
+
+                // 添加到总路径数组，用于计算中心点和边界
+                paths.value = [...paths.value, ...placemark.geometry.coordinates];
+
+                // 为每个placemark创建一条轨迹
+                polylines.value.push({
+                    points: placemark.geometry.coordinates,
+                    color: '#FF0000', // 不同轨迹使用不同颜色
+                    width: 4,
+                    arrowLine: false
+                });
+            }
+        });
+    }
+
+    if (paths.value.length > 0) {
+        drawPolyline(paths.value);
+    }
 }
 
-
-watch(() => props.tempFilePath, async (newVal) => {
-    if (!newVal) return
-    const kmlContent = uni.getStorageSync('kmlContent');
-    if (!kmlContent) return
-    initKmlContent(kmlContent);
-
-
+// 修改watch函数
+watch(() => props.kmlContent, async (newVal) => {
+    if (!newVal) {
+        paths.value = []
+        polylines.value = []
+        return
+    }
+    initKmlContent(newVal);
 });
-onReady(() => {
-    const kmlContent = uni.getStorageSync('kmlContent');
-    if (kmlContent) initKmlContent(kmlContent);
-})
 </script>
 
 <style scoped>
+.con {
+    margin-top: 20rpx;
+}
+
 .map {
     width: 100%;
     height: 500rpx;

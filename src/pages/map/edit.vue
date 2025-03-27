@@ -1,5 +1,6 @@
 <template>
-    <div class="app_container" :style="{ backgroundImage: `url(https://ccl-resource.kaisir.cn/ccl-20250120111559-604952.jpg)` }">
+    <div class="app_container"
+        :style="{ backgroundImage: `url(https://ccl-resource.kaisir.cn/ccl-20250120111559-604952.jpg)` }">
         <div class="module">
             <div class="list">
                 <div class="left">路线名称*</div>
@@ -51,13 +52,10 @@
                     <div v-else class="txt">
                         <span>路书已上传</span>
                         <button type="primary" @click="upFile" size="mini">修改</button>
-                        <button type="primary" @click="info.road_file = []" size="mini">删除</button>
+                        <button type="primary" @click="deleteFile" size="mini">删除</button>
                     </div>
                 </div>
-                <div class="con">
-                    <parseMap :tempFilePath="tempFilePath" />
-
-                </div>
+                <parseMap :kmlContent="kmlContent" />
             </div>
         </div>
 
@@ -95,12 +93,12 @@ import { editMapApi } from '@/services'
 import { uploadFile } from '@/utils/http'
 import { onLoad } from '@dcloudio/uni-app';
 import { ref, reactive } from 'vue';
-import {checkLogin} from '@/common/hooks' 
+import { checkLogin } from '@/common/hooks'
 import { useUserStore } from '../../stores';
 import parseMap from './components/parseMap.vue';
 const userStore = useUserStore()
 const saveDisabled = ref(false)
-const tempFilePath = ref('')
+const kmlContent = ref('')
 const info = reactive({
     id: '',
     name: '',
@@ -122,18 +120,7 @@ const readFileContent = (tempFilePath) => {
     fs.readFile({
         filePath: tempFilePath,
         encoding: 'utf-8',
-        success: res => {
-            console.log('文件内容读取成功：')
-            const kmlContent = res.data
-            console.log('kmlContent', kmlContent);
-            wx.setStorage({
-                key: 'kmlContent',
-                data: kmlContent,
-                success: () => {
-                    console.log('kmlContent存储成功')
-                }
-            })
-        },
+        success: res => kmlContent.value = res.data,
         fail: err => {
             console.error('文件读取失败：', err)
             uni.showToast({
@@ -145,24 +132,21 @@ const readFileContent = (tempFilePath) => {
 }
 
 const upFile = async () => {
-    const res = await wx.chooseMessageFile({
-        count: 10,
-        type: 'file',
-    })
+    const res = await wx.chooseMessageFile({ count: 10, type: 'file' })
     const file = res.tempFiles[0]
-    console.log('file',file);
-    tempFilePath.value = file.path
     readFileContent(file.path)
-    
-    // const { url } = await uploadFile(file.path)
-    // info.road_file = url
+    const { url } = await uploadFile(file.path)
+    info.road_file = url
 }
-
+const deleteFile = () => {
+    info.road_file = ''
+    kmlContent.value = ''
+}
 const changeImgs = (urls) => {
     info.description_imgs = [...info.description_imgs, ...urls]
 }
 const toSave = async () => {
-    if(!await checkLogin()) return
+    if (!await checkLogin()) return
     if (!info.name) return uni.showToast({
         title: '请填写路线名称',
         icon: 'none',
@@ -228,8 +212,9 @@ onLoad((opt) => {
 .app_container {
     background-position: center;
     background-size: 100% 100%;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    background-repeat: repeat;
+    padding-top: 1rpx;
 
     .module {
         width: calc(100vw - 40rpx);

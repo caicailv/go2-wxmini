@@ -30,6 +30,7 @@
             <div class="imgs" v-if="info.description_imgs.length">
                 <image v-for="item, index in info.description_imgs" :key="index" :src="item" @click="prevImg(item)" />
             </div>
+            <parseMap :kmlContent="kmlContent" />
         </div>
         <button type="primary" size="large" class="road_file" v-if="info.road_file"
             @click="downloadRoadFile">路书下载</button>
@@ -41,39 +42,65 @@ import { getMapListApi, setLightMapApi } from '../../services';
 import { onLoad } from '@dcloudio/uni-app';
 import { checkLogin } from '@/common/hooks'
 import { useUserStore } from '../../stores';
-import { reactive, computed } from 'vue';
-import {shareCofig} from '@/utils/share'
+import parseMap from './components/parseMap.vue';
+import { ref, reactive, computed } from 'vue';
+import { shareCofig } from '@/utils/share'
 import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
-onShareAppMessage(()=>shareCofig)
-onShareTimeline(()=>shareCofig)
+onShareAppMessage(() => shareCofig)
+onShareTimeline(() => shareCofig)
 
 const userStore = useUserStore()
 const litMaps = computed(() => userStore?.profile?.lit_map || [])
 const info = reactive({ id: '' })
+const kmlContent = ref('')
+let tempFilePath = ''
 const getInfo = async () => {
     const res = await getMapListApi({ id: info.id })
     Object.keys(res.data[0]).forEach(key => {
         info[key] = res.data[0][key]
     })
-    info.description_imgs = res.data[0]?.description_imgs||[]
+    info.description_imgs = res.data[0]?.description_imgs || []
+    if (info.road_file) loadFile()
 }
-const downloadRoadFile = async () => {
+
+const readFileContent = (tempFilePath) => {
+    const fs = wx.getFileSystemManager()
+    fs.readFile({
+        filePath: tempFilePath,
+        encoding: 'utf-8',
+        success: res => kmlContent.value = res.data,
+        fail: err => {
+            console.error('文件读取失败：', err)
+            uni.showToast({
+                title: '文件读取失败',
+                icon: 'none'
+            })
+        }
+    })
+}
+
+const loadFile = () => {
     wx.downloadFile({
         url: info.road_file,
         success(res) {
-            wx.saveFile({
-                tempFilePath: res.tempFilePath,
-                success(saveRes) {
-                    uni.showModal({
-                        title: '提示',
-                        content: '文件已保存到本地,路径为' + saveRes.savedFilePath,
-                        showCancel: false,
-                    })
-                },
-                fail(err) {
-                    console.error('文件保存失败:', err);
-                }
-            });
+            tempFilePath = res.tempFilePath
+            readFileContent(tempFilePath)
+        }
+    });
+
+}
+const downloadRoadFile = async () => {
+    wx.saveFile({
+        tempFilePath,
+        success(saveRes) {
+            uni.showModal({
+                title: '提示',
+                content: '文件已保存到本地,路径为' + saveRes.savedFilePath,
+                showCancel: false,
+            })
+        },
+        fail(err) {
+            console.error('文件保存失败:', err);
         }
     });
 }
