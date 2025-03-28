@@ -1,19 +1,96 @@
 function parseKML(kmlString) {
-  // Helper function to extract content between tags
+  // WGS-84椭球体参数
+  const a = 6378245.0;                   // 长半轴
+  const f = 1/298.3;                     // 扁率
+  const b = a * (1 - f);                 // 短半轴
+  const ee = (a * a - b * b) / (a * a);  // 第一偏心率平方
+
+  // 判断坐标是否在中国范围内（更精确的边界）
+  function isInChina(lat, lng) {
+    // 中国大陆基本范围检查
+    if (lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271) {
+      return false;
+    }
+    
+    // 排除台湾、香港、澳门区域
+    // 台湾
+    if (lng > 121.0 && lng < 122.0 && lat > 22.0 && lat < 25.5) {
+      return false;
+    }
+    
+    // 香港
+    if (lng > 113.8 && lng < 114.5 && lat > 22.1 && lat < 22.7) {
+      return false;
+    }
+    
+    // 澳门
+    if (lng > 113.4 && lng < 113.7 && lat > 22.0 && lat < 22.3) {
+      return false;
+    }
+    
+    return true;
+  }
+
+  // 计算纬度偏移量
+  function transformLat(x, y) {
+    let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+    ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+    return ret;
+  }
+
+  // 计算经度偏移量
+  function transformLng(x, y) {
+    let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+    ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+    return ret;
+  }
+
+  // WGS-84转GCJ-02高精度算法
+  function wgs84ToGcj02(lng, lat) {
+    if (!isInChina(lat, lng)) {
+      return {longitude: lng, latitude: lat};
+    }
+    
+    const dLat = transformLat(lng - 105.0, lat - 35.0);
+    const dLng = transformLng(lng - 105.0, lat - 35.0);
+    
+    const radLat = lat / 180.0 * Math.PI;
+    const magic = Math.sin(radLat);
+    const sqrtMagic = Math.sqrt(1 - ee * magic * magic);
+    
+    const dLatFinal = (dLat * 180.0) / ((a * (1 - ee)) / (sqrtMagic * sqrtMagic * sqrtMagic) * Math.PI);
+    const dLngFinal = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+    
+    // 应用更精确的偏移计算
+    const gcjLat = lat + dLatFinal;
+    const gcjLng = lng + dLngFinal;
+    
+    // 返回精确到8位小数的结果（约1.1毫米精度）
+    return {
+      latitude: Math.round(gcjLat * 100000000) / 100000000,
+      longitude: Math.round(gcjLng * 100000000) / 100000000
+    };
+  }
+
+  // 解析标签内容的辅助函数
   function getTagContent(xml, tagName) {
     const regex = new RegExp(`<${tagName}[^>]*>(.*?)<\\/${tagName}>`, 's');
     const match = regex.exec(xml);
     return match ? match[1] : '';
   }
   
-  // Helper function to extract all occurrences of a tag
+  // 提取所有标签实例的辅助函数
   function getAllTags(xml, tagName) {
     const regex = new RegExp(`<${tagName}([^>]*)>(.*?)<\\/${tagName}>`, 'gs');
     const results = [];
     let match;
     
     while ((match = regex.exec(xml)) !== null) {
-      // Parse attributes
+      // 解析属性
       const attrString = match[1];
       const attrRegex = /(\w+)="([^"]*)"/g;
       let attrMatch;
@@ -32,28 +109,37 @@ function parseKML(kmlString) {
     return results;
   }
   
-  // Helper function to extract CDATA content
+  // 提取CDATA内容的辅助函数
   function extractCDATA(text) {
     if (!text) return '';
     const match = /<!\[CDATA\[(.*?)\]\]>/s.exec(text);
     return match ? match[1] : text.trim();
   }
   
-  // Helper function to parse coordinates
+  // 解析坐标并从WGS-84转为GCJ-02
   function parseCoordinates(text) {
     if (!text || !text.trim()) return [];
     
     return text.trim().split(/\s+/).map(coord => {
       const parts = coord.split(',').map(parseFloat);
+      
+      // 原始WGS-84坐标
+      const lng = parts[0] || 0;
+      const lat = parts[1] || 0;
+      const alt = parts.length > 2 ? parts[2] : 0;
+      
+      // 从WGS-84转换为GCJ-02
+      const converted = wgs84ToGcj02(lng, lat);
+      
       return {
-        longitude: parts[0] || 0,
-        latitude: parts[1] || 0,
-        altitude: parts.length > 2 ? parts[2] : 0
+        longitude: converted.longitude,
+        latitude: converted.latitude,
+        altitude: alt
       };
     });
   }
   
-  // Main parsing logic
+  // 主解析逻辑
   const result = {
     document: {
       id: '',
@@ -64,23 +150,23 @@ function parseKML(kmlString) {
     }
   };
   
-  // Extract document
+  // 提取文档
   const docContent = getTagContent(kmlString, 'Document');
   if (!docContent) return result;
   
-  // Extract document ID and name
+  // 提取文档ID和名称
   const docMatch = /<Document[^>]*id="([^"]*)"/.exec(kmlString);
   result.document.id = docMatch ? docMatch[1] : '';
   result.document.name = extractCDATA(getTagContent(docContent, 'name'));
   
-  // Extract styles
+  // 提取样式
   const styles = getAllTags(docContent, 'Style');
   styles.forEach(({attributes, content}) => {
     if (!attributes.id) return;
     
     const style = { id: attributes.id };
     
-    // Extract IconStyle
+    // 提取IconStyle
     const iconStyleContent = getTagContent(content, 'IconStyle');
     if (iconStyleContent) {
       const iconContent = getTagContent(iconStyleContent, 'Icon');
@@ -89,7 +175,7 @@ function parseKML(kmlString) {
       }
     }
     
-    // Extract LineStyle
+    // 提取LineStyle
     const lineStyleContent = getTagContent(content, 'LineStyle');
     if (lineStyleContent) {
       style.lineColor = getTagContent(lineStyleContent, 'color');
@@ -97,7 +183,7 @@ function parseKML(kmlString) {
       if (width) style.lineWidth = parseFloat(width);
     }
     
-    // Extract LabelStyle
+    // 提取LabelStyle
     const labelStyleContent = getTagContent(content, 'LabelStyle');
     if (labelStyleContent) {
       style.labelColor = getTagContent(labelStyleContent, 'color');
@@ -106,14 +192,14 @@ function parseKML(kmlString) {
     result.document.styles[attributes.id] = style;
   });
   
-  // Extract StyleMaps
+  // 提取StyleMaps
   const styleMaps = getAllTags(docContent, 'StyleMap');
   styleMaps.forEach(({attributes, content}) => {
     if (!attributes.id) return;
     
     const styleMap = { id: attributes.id, pairs: [] };
     
-    // Extract Pairs
+    // 提取Pairs
     const pairs = getAllTags(content, 'Pair');
     pairs.forEach(({content: pairContent}) => {
       const key = getTagContent(pairContent, 'key');
@@ -127,7 +213,7 @@ function parseKML(kmlString) {
     result.document.styles[attributes.id] = styleMap;
   });
   
-  // Extract ExtendedData
+  // 提取ExtendedData
   const extendedDataContent = getTagContent(docContent, 'ExtendedData');
   if (extendedDataContent) {
     const dataItems = getAllTags(extendedDataContent, 'Data');
@@ -138,7 +224,7 @@ function parseKML(kmlString) {
     });
   }
   
-  // Extract Folders
+  // 提取Folders
   const folders = getAllTags(docContent, 'Folder');
   folders.forEach(({attributes, content}) => {
     if (!attributes.id) return;
@@ -149,7 +235,7 @@ function parseKML(kmlString) {
       placemarks: []
     };
     
-    // Extract Placemarks
+    // 提取Placemarks
     const placemarks = getAllTags(content, 'Placemark');
     placemarks.forEach(({attributes: placemarkAttrs, content: placemarkContent}) => {
       const placemark = {
@@ -159,7 +245,7 @@ function parseKML(kmlString) {
         styleUrl: getTagContent(placemarkContent, 'styleUrl')
       };
       
-      // Extract Point geometry
+      // 提取Point几何数据
       const pointContent = getTagContent(placemarkContent, 'Point');
       if (pointContent) {
         const coordsText = getTagContent(pointContent, 'coordinates');
@@ -173,7 +259,7 @@ function parseKML(kmlString) {
         }
       }
       
-      // Extract LineString geometry
+      // 提取LineString几何数据
       const lineStringContent = getTagContent(placemarkContent, 'LineString');
       if (lineStringContent) {
         const coordsText = getTagContent(lineStringContent, 'coordinates');

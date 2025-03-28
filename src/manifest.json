@@ -62,6 +62,14 @@
             "urlCheck" : true,
             "es6" : true
         },
+        "requiredPrivateInfos": [
+            "getLocation"  // 声明需要使用的隐私接口
+          ],
+        "permission": {
+            "scope.userLocation": {
+                "desc": "你的位置信息将用于定位效果展示"
+            }
+        },
         "usingComponents" : true
     },
     "mp-alipay" : {

@@ -1,7 +1,15 @@
 <template>
     <div class="con" v-if="paths.length">
-        <map id="myMap" class="map" :latitude="centerLatitude" :longitude="centerLongitude" :markers="markers"
-            :polyline="polylines"></map>
+        <map id="myMap" 
+            class="map" 
+            :latitude="centerLatitude" 
+            :longitude="centerLongitude" 
+            :markers="markers"
+            :polyline="polylines"
+            :controls="controls"
+            @controltap="controlTap"
+            :scale="16">         
+        </map>
         <div class="li">
             <div class="left">创建人</div>
             <div class="right">{{ resultData?.extendedData?.CreaterName }}</div>
@@ -36,6 +44,20 @@ const polylines = ref([]); // 新增polylines响应式数组
 const centerLatitude = ref(0);
 const centerLongitude = ref(0);
 const markers = ref([]);
+const controls = ref([{
+    id: 1,
+    position: {
+        left: 10, // 初始值，将在onReady中更新
+        top: 10, // 500-40-30(考虑地图高度500rpx减去控件高度和边距)
+        width: 40,
+        height: 40
+    },
+    clickable: true,
+    iconPath: '/static/images/10.png'
+}]);
+
+
+
 const calculateCenter = (coordinates) => {
     if (!coordinates || coordinates.length === 0) return { latitude: 0, longitude: 0 };
     let totalLatitude = 0;
@@ -86,38 +108,88 @@ const drawPolyline = (paths) => {
     const mpInstance = instance.proxy.$scope
     const mapContext = wx.createMapContext('myMap', mpInstance);
     mapContext.includePoints({ points: paths, padding: [20, 20, 20, 20] });
+    getMyLocation()
 };
 
 
+const getMyLocation = () => {
+    wx.getLocation({
+        type: 'gcj02',
+        success: (res) => {
+            console.log('res',res);      
+            // centerLatitude.value = res.latitude;
+            // centerLongitude.value = res.longitude;
+            markers.value.push({
+                id: 3,
+                latitude: res.latitude,
+                longitude: res.longitude,
+                iconPath: '/static/images/11.png', // 当前位置图标
+                width: 20,
+                height: 20
+            })
 
+            console.log('markers.value',markers.value);
+        },
+        fail: (err) => {
+            console.error('获取位置失败:', err);
+        }
+    });
+};
+
+const controlTap = () => {
+    console.log('controlTap');
+    wx.getLocation({
+        type: 'gcj02',
+        success: (res) => {
+            centerLatitude.value = res.latitude;
+            centerLongitude.value = res.longitude;
+            
+            // 更新地图视野
+            const mpInstance = instance.proxy.$scope
+            const mapContext = wx.createMapContext('myMap', mpInstance);
+            mapContext.moveToLocation({
+                latitude: res.latitude,
+                longitude: res.longitude
+            });
+        },
+        fail: (err) => {
+            console.error('获取位置失败:', err);
+        }
+    });
+};
 
 const initKmlContent = (kmlContent) => {
     const result = parseKML(kmlContent);
     resultData.value = result.document;
 
-    // 初始化空路径数组
     paths.value = [];
     polylines.value = [];
 
-    // 获取所有placemarks的坐标
     if (result.document.folders && result.document.folders.length > 1 &&
         result.document.folders[1].placemarks &&
         result.document.folders[1].placemarks.length > 0) {
 
-        // 遍历所有placemarks，为每个创建一条轨迹
         result.document.folders[1].placemarks.forEach((placemark, index) => {
             if (placemark.geometry && placemark.geometry.coordinates &&
                 Array.isArray(placemark.geometry.coordinates)) {
 
-                // 添加到总路径数组，用于计算中心点和边界
-                paths.value = [...paths.value, ...placemark.geometry.coordinates];
+                // 保留更多精度的坐标点
+                const preciseCoordinates = placemark.geometry.coordinates.map(coord => ({
+                    latitude: coord.latitude,
+                    longitude: coord.longitude
+                }));
 
-                // 为每个placemark创建一条轨迹
+                paths.value = [...paths.value, ...preciseCoordinates];
+
+                // 为每条轨迹添加更多配置
                 polylines.value.push({
-                    points: placemark.geometry.coordinates,
-                    color: '#FF0000', // 不同轨迹使用不同颜色
-                    width: 4,
-                    arrowLine: false
+                    points: preciseCoordinates,
+                    color: '#FF0000',
+                    width: 2,
+                    // arrowLine: true,    // 显示箭头
+                    // borderColor: '#000', // 轨迹边框色
+                    // borderWidth: 1,      // 轨迹边框宽度
+                    // dottedLine: false    // 实线
                 });
             }
         });

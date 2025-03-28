@@ -85,6 +85,14 @@ const loadFile = () => {
         success(res) {
             tempFilePath = res.tempFilePath
             readFileContent(tempFilePath)
+        },
+        fail(err) {
+            console.error('文件下载失败:', err);
+            wx.showToast({
+                title: '文件下载失败',
+                icon: 'none'
+            })
+
         }
     });
 
